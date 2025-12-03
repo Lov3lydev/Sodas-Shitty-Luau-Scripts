@@ -2,51 +2,50 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
-local CurrentTheme = {
-	Background = Color3.fromRGB(35,35,35),
-	Button = Color3.fromRGB(60,120,220),
-	ButtonHover = Color3.fromRGB(80,150,255),
-	TextColor = Color3.fromRGB(255,255,255),
-	Entry = Color3.fromRGB(50,50,50)
-}
-
-local ScreenGui = Instance.new("ScreenGui")
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "ESPGui"
-ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0,400,0,250)
-MainFrame.Position = UDim2.new(0.5,-200,0.5,-125)
-MainFrame.BackgroundColor3 = CurrentTheme.Background
+MainFrame.Size = UDim2.new(0,400,0,300)
+MainFrame.Position = UDim2.new(0.5,-200,0.5,-150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 MainFrame.AnchorPoint = Vector2.new(0.5,0.5)
 MainFrame.Parent = ScreenGui
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0,16)
-MainCorner.Parent = MainFrame
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,16)
+MainFrame.Visible = true
 
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1,0,0,40)
 TopBar.Position = UDim2.new(0,0,0,0)
-TopBar.BackgroundColor3 = CurrentTheme.Entry
+TopBar.BackgroundColor3 = Color3.fromRGB(50,50,50)
 TopBar.Parent = MainFrame
-local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0,16)
-TopCorner.Parent = TopBar
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0,16)
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0,200,1,0)
-Title.Position = UDim2.new(0,10,0,0)
-Title.BackgroundTransparency = 1
-Title.Text = "ESP GUI"
-Title.Font = Enum.Font.RobotoMono
-Title.TextSize = 18
-Title.TextColor3 = CurrentTheme.TextColor
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
+local dragging = false
+local dragInput, dragStart, startPos
+local function update(input)
+	local delta = input.Position - dragStart
+	MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+TopBar.InputBegan:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		dragging=true
+		dragStart=input.Position
+		startPos=MainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState==Enum.UserInputState.End then dragging=false end
+		end)
+	end
+end)
+TopBar.InputChanged:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseMovement then dragInput=input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input==dragInput then update(input) end
+end)
 
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0,40,0,30)
@@ -57,57 +56,47 @@ CloseButton.TextSize = 16
 CloseButton.TextColor3 = Color3.new(1,1,1)
 CloseButton.BackgroundColor3 = Color3.fromRGB(150,50,50)
 CloseButton.Parent = TopBar
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0,8)
-CloseCorner.Parent = CloseButton
+Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0,8)
 
 local normalESPButton = Instance.new("TextButton")
 normalESPButton.Size = UDim2.new(0,180,0,40)
 normalESPButton.Position = UDim2.new(0,10,0,60)
 normalESPButton.Text = "Normal ESP"
-normalESPButton.BackgroundColor3 = CurrentTheme.Button
-normalESPButton.TextColor3 = CurrentTheme.TextColor
+normalESPButton.BackgroundColor3 = Color3.fromRGB(60,120,220)
+normalESPButton.TextColor3 = Color3.new(1,1,1)
 normalESPButton.Font = Enum.Font.RobotoMono
 normalESPButton.TextSize = 16
 normalESPButton.Parent = MainFrame
-local nc = Instance.new("UICorner")
-nc.CornerRadius = UDim.new(0,8)
-nc.Parent = normalESPButton
+Instance.new("UICorner", normalESPButton).CornerRadius = UDim.new(0,8)
 
 local teamESPButton = Instance.new("TextButton")
 teamESPButton.Size = UDim2.new(0,180,0,40)
 teamESPButton.Position = UDim2.new(0,10,0,110)
 teamESPButton.Text = "Team ESP"
-teamESPButton.BackgroundColor3 = CurrentTheme.Button
-teamESPButton.TextColor3 = CurrentTheme.TextColor
+teamESPButton.BackgroundColor3 = Color3.fromRGB(60,120,220)
+teamESPButton.TextColor3 = Color3.new(1,1,1)
 teamESPButton.Font = Enum.Font.RobotoMono
 teamESPButton.TextSize = 16
 teamESPButton.Parent = MainFrame
-local tc = Instance.new("UICorner")
-tc.CornerRadius = UDim.new(0,8)
-tc.Parent = teamESPButton
+Instance.new("UICorner", teamESPButton).CornerRadius = UDim.new(0,8)
 
-local ColorLabel = Instance.new("TextLabel")
-ColorLabel.Size = UDim2.new(0,380,0,30)
-ColorLabel.Position = UDim2.new(0,10,0,170)
-ColorLabel.Text = "Color"
-ColorLabel.TextColor3 = CurrentTheme.TextColor
-ColorLabel.BackgroundColor3 = CurrentTheme.Entry
-ColorLabel.Font = Enum.Font.RobotoMono
-ColorLabel.TextSize = 16
-ColorLabel.Parent = MainFrame
-local clCorner = Instance.new("UICorner")
-clCorner.CornerRadius = UDim.new(0,8)
-clCorner.Parent = ColorLabel
+local distanceButton = Instance.new("TextButton")
+distanceButton.Size = UDim2.new(0,180,0,40)
+distanceButton.Position = UDim2.new(0,200,0,60)
+distanceButton.Text = "Distance/User"
+distanceButton.BackgroundColor3 = Color3.fromRGB(60,120,220)
+distanceButton.TextColor3 = Color3.new(1,1,1)
+distanceButton.Font = Enum.Font.RobotoMono
+distanceButton.TextSize = 16
+distanceButton.Parent = MainFrame
+Instance.new("UICorner", distanceButton).CornerRadius = UDim.new(0,8)
 
 local ColorSlider = Instance.new("Frame")
 ColorSlider.Size = UDim2.new(0,360,0,10)
 ColorSlider.Position = UDim2.new(0,20,0,200)
 ColorSlider.BackgroundColor3 = Color3.new(1,1,1)
 ColorSlider.Parent = MainFrame
-local csCorner = Instance.new("UICorner")
-csCorner.CornerRadius = UDim.new(0,8)
-csCorner.Parent = ColorSlider
+Instance.new("UICorner", ColorSlider).CornerRadius = UDim.new(0,8)
 
 local UISlider = Instance.new("TextButton")
 UISlider.Size = UDim2.new(0,20,1,0)
@@ -116,115 +105,120 @@ UISlider.BackgroundColor3 = Color3.fromRGB(60,120,220)
 UISlider.BorderSizePixel = 0
 UISlider.Text = ""
 UISlider.Parent = ColorSlider
-local usCorner = Instance.new("UICorner")
-usCorner.CornerRadius = UDim.new(0,6)
-usCorner.Parent = UISlider
+Instance.new("UICorner", UISlider).CornerRadius = UDim.new(0,6)
 
 local draggingSlider = false
-UISlider.MouseButton1Down:Connect(function()
-	draggingSlider = true
-end)
-UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		draggingSlider = false
-	end
-end)
-
+UISlider.MouseButton1Down:Connect(function() draggingSlider=true end)
+UserInputService.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=false end end)
 local function getSliderColor()
-	local pos = UISlider.Position.X.Offset / (ColorSlider.AbsoluteSize.X - UISlider.AbsoluteSize.X)
+	local pos = UISlider.Position.X.Offset/(ColorSlider.AbsoluteSize.X-UISlider.AbsoluteSize.X)
 	return Color3.fromHSV(pos,1,1)
 end
 
-local normalESPEnabled = false
-local teamESPEnabled = false
-local espHighlights = {}
+local normalESPEnabled=false
+local teamESPEnabled=false
+local distanceEnabled=false
 
-local function toggleESP(teamBased)
-	if teamBased then
-		teamESPEnabled = not teamESPEnabled
-		normalESPEnabled = false
-	else
-		normalESPEnabled = not normalESPEnabled
-		teamESPEnabled = false
-	end
-	
-	for _,h in pairs(espHighlights) do
-		if h and h.Parent then h:Destroy() end
-	end
-	espHighlights = {}
-end
-
-normalESPButton.MouseButton1Click:Connect(function()
-	toggleESP(false)
-end)
-teamESPButton.MouseButton1Click:Connect(function()
-	toggleESP(true)
-end)
-
-RunService.RenderStepped:Connect(function()
-	if normalESPEnabled or teamESPEnabled then
-		for _,p in pairs(Players:GetPlayers()) do
-			if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-				local existing = espHighlights[p]
-				if not existing then
-					local h = Instance.new("Highlight")
-					h.Parent = CoreGui
-					h.Adornee = p.Character
-					h.FillTransparency = 0.6
-					h.OutlineTransparency = 0.6
-					espHighlights[p] = h
-				end
-				if normalESPEnabled then
-					espHighlights[p].FillColor = getSliderColor()
-					espHighlights[p].OutlineColor = getSliderColor()
-				elseif teamESPEnabled then
-					espHighlights[p].FillColor = p.TeamColor.Color
-					espHighlights[p].OutlineColor = p.TeamColor.Color
+local function removeAllHighlights()
+	for _,p in pairs(Players:GetPlayers()) do
+		if p.Character then
+			for _,c in pairs(p.Character:GetDescendants()) do
+				if (c:IsA("Highlight") or c:IsA("BillboardGui")) and (c.Name=="SodasHighlights" or c.Name=="SodasDistance") then
+					c:Destroy()
 				end
 			end
 		end
-	else
-		for _,h in pairs(espHighlights) do
-			if h and h.Parent then h:Destroy() end
+	end
+end
+
+local function toggleESP(buttonType)
+	if buttonType=="normal" then
+		normalESPEnabled = not normalESPEnabled
+		if normalESPEnabled then teamESPEnabled=false else removeAllHighlights() end
+	elseif buttonType=="team" then
+		teamESPEnabled = not teamESPEnabled
+		if teamESPEnabled then normalESPEnabled=false else removeAllHighlights() end
+	end
+end
+
+normalESPButton.MouseButton1Click:Connect(function() toggleESP("normal") end)
+teamESPButton.MouseButton1Click:Connect(function() toggleESP("team") end)
+distanceButton.MouseButton1Click:Connect(function()
+	distanceEnabled = not distanceEnabled
+	if not distanceEnabled then removeAllHighlights() end
+end)
+
+RunService.RenderStepped:Connect(function()
+	for _,p in pairs(Players:GetPlayers()) do
+		if p~=LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			if normalESPEnabled or teamESPEnabled then
+				for _,existing in pairs(p.Character:GetChildren()) do
+					if existing:IsA("Highlight") and existing.Name=="SodasHighlights" then existing:Destroy() end
+				end
+				local h = Instance.new("Highlight")
+				h.Name="SodasHighlights"
+				h.Parent=p.Character
+				h.Adornee=p.Character
+				h.FillTransparency=0.6
+				h.OutlineTransparency=0.6
+				if normalESPEnabled then
+					h.FillColor=getSliderColor()
+					h.OutlineColor=getSliderColor()
+				elseif teamESPEnabled then
+					h.FillColor=p.TeamColor.Color
+					h.OutlineColor=p.TeamColor.Color
+				end
+			end
+
+			if distanceEnabled then
+				local torso = p.Character:FindFirstChild("UpperTorso") or p.Character:FindFirstChild("Torso")
+				if torso then
+					local label = torso:FindFirstChild("SodasDistance")
+					if not label then
+						local bill = Instance.new("BillboardGui")
+						bill.Name="SodasDistance"
+						bill.Size=UDim2.new(0,120,0,30)
+						bill.Adornee=torso
+						bill.AlwaysOnTop=true
+						bill.Parent=torso
+						local txt = Instance.new("TextLabel")
+						txt.Size=UDim2.new(1,0,1,0)
+						txt.BackgroundTransparency=1
+						txt.TextColor3=Color3.new(1,1,1)
+						txt.Font=Enum.Font.RobotoMono
+						txt.TextSize=16
+						txt.Parent=bill
+					end
+					torso.SodasDistance.TextLabel.Text=string.format("%s, %.1f",p.DisplayName,(LocalPlayer.Character.HumanoidRootPart.Position-p.Character.HumanoidRootPart.Position).Magnitude)
+				end
+			end
 		end
-		espHighlights = {}
 	end
 end)
 
-local function tweenOpen()
-	MainFrame.Position = UDim2.new(0.5,-200,0.5,-150)
-	MainFrame.Size = UDim2.new(0,0,0,0)
-	MainFrame.Visible = true
-	TweenService:Create(MainFrame,TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Size=UDim2.new(0,400,0,250),Position=UDim2.new(0.5,-200,0.5,-125)}):Play()
-end
-local function tweenClose()
-	local t = TweenService:Create(MainFrame,TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{Size=UDim2.new(0,0,0,0),Position=UDim2.new(0.5,-200,0.5,-150)})
-	t:Play()
-	t.Completed:Wait()
-	MainFrame.Visible = false
+local function removeAll()
+	normalESPEnabled=false
+	teamESPEnabled=false
+	distanceEnabled=false
+	removeAllHighlights()
+	if ScreenGui then
+		ScreenGui:Destroy()
+	end
 end
 
-CloseButton.MouseButton1Click:Connect(tweenClose)
+CloseButton.MouseButton1Click:Connect(removeAll)
 
 UserInputService.InputBegan:Connect(function(input,gpe)
-	if input.KeyCode == Enum.KeyCode.K and not gpe then
-		if MainFrame.Visible then
-			tweenClose()
-		else
-			tweenOpen()
-		end
-	end
-end)
-
-ColorSlider:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-	if UISlider.Position.X.Offset > ColorSlider.AbsoluteSize.X - UISlider.AbsoluteSize.X then
-		UISlider.Position = UDim2.new(0,ColorSlider.AbsoluteSize.X - UISlider.AbsoluteSize.X,0,0)
+	if input.KeyCode==Enum.KeyCode.K and not gpe then
+		MainFrame.Visible = not MainFrame.Visible
+	elseif input.KeyCode==Enum.KeyCode.X then
+		removeAll()
 	end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-	if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local newX = math.clamp(input.Position.X - ColorSlider.AbsolutePosition.X - UISlider.AbsoluteSize.X/2,0,ColorSlider.AbsoluteSize.X - UISlider.AbsoluteSize.X)
-		UISlider.Position = UDim2.new(0,newX,0,0)
+	if draggingSlider and input.UserInputType==Enum.UserInputType.MouseMovement then
+		local newX = math.clamp(input.Position.X-ColorSlider.AbsolutePosition.X-UISlider.AbsoluteSize.X/2,0,ColorSlider.AbsoluteSize.X-UISlider.AbsoluteSize.X)
+		UISlider.Position=UDim2.new(0,newX,0,0)
 	end
 end)
